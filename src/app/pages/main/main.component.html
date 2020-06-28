@@ -1,0 +1,70 @@
+<div class="container-fluid">
+
+  <!-- <p>Each card represents a block on a chain. Click on a block to see the transactions inside</p> -->
+  <button class="btn btn-primary" (click)="getSkewData()">test</button>
+  
+  <div class="row">
+
+    <div class="col">
+
+      <h1>Skews</h1>
+
+      <div class="tableFixHead">
+        <table class="table table-striped table-sm table-hover">
+          <thead>
+            <tr>
+              <th>Symbol</th>
+              <th>Price</th>
+              <th>Expiration</th>
+              <th>DTE</th>
+              <th>Quad 1</th>
+              <th>Quad 2</th>
+              <th>Quad 3</th>
+              <th>Quad 4</th>
+              <th>Max Quad Diff</th>
+              <th>Quad 1v2</th>
+              <th>Quad 1v3</th>
+              <th>Quad 1v4</th>
+              <th>Quad 2v3</th>
+              <th>Quad 2v4</th>
+              <th>Quad 3v4</th>
+              <th>Calc Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let data of skewData">
+              <td>{{ data?.symbol }}</td>
+              <td>{{ data?.underlyingPrice }}</td>
+              <td>{{ data?.expirationDate | date:'shortDate'  }}</td>
+              <td>{{ data?.daysToExpiration }}</td>
+              <td>{{ data?.quad1 | number : '1.2-2'}}</td>
+              <td>{{ data?.quad2 | number : '1.2-2' }}</td>
+              <td>{{ data?.quad3 | number : '1.2-2' }}</td>
+              <td>{{ data?.quad4 | number : '1.2-2' }}</td>
+              <td>{{ data?.maxQuadDiff | number : '1.2-2' }}</td>
+              <td>{{ data?.quad1v2 | number : '1.2-2' }}</td>
+              <td>{{ data?.quad1v3 | number : '1.2-2' }}</td>
+              <td>{{ data?.quad1v4 | number : '1.2-2' }}</td>
+              <td>{{ data?.quad2v3 | number : '1.2-2' }}</td>
+              <td>{{ data?.quad2v4 | number : '1.2-2' }}</td>
+              <td>{{ data?.quad3v4 | number : '1.2-2' }}</td>
+              <td>{{ data?.calculationDate | date:'shortDate' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <div class="col">
+      <div id="SupplyDemand"></div>
+    </div>
+
+  </div>
+
+
+  <!-- <app-block-view *ngFor="let block of blocks" [block]="block" (click)="showTransactions(block)"></app-block-view> -->
+
+
+  <!-- <app-transactions-table [transactions]="selectedBlock.transactions"></app-transactions-table> -->
+</div>

@@ -1,0 +1,16 @@
+.container {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.tableFixHead {
+  overflow-y: auto;
+  height: 1000px;
+}
+
+.tableFixHead thead th {
+  position: sticky;
+  top: 0;
+  background-color:#f5be34;
+  color: black;
+}
