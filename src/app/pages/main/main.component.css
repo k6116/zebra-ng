@@ -14,3 +14,7 @@
   background-color:#f5be34;
   color: black;
 }
+
+.table tr td {
+  cursor: pointer;
+}

@@ -32,7 +32,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let data of skewData">
+            <tr *ngFor="let data of skewData" (click)="calcSkewData(data)">
               <td>{{ data?.symbol }}</td>
               <td>{{ data?.underlyingPrice }}</td>
               <td>{{ data?.expirationDate | date:'shortDate'  }}</td>

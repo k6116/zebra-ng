@@ -23,8 +23,8 @@ export class ApiDataService {
     .map((response: Response) => response.json());
   }
 
-  getOptionsData() {
-    return this.http.get('api/getOptionsData')
+  getOptionsData(symbol: string, expirationDate: string) {
+    return this.http.get(`api/getOptionsData/${symbol}/${expirationDate}`)
     .timeout(this.timeout)
     .map((response: Response) => response.json());
   }

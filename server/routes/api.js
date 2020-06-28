@@ -11,7 +11,7 @@ var controllers = require('../controllers/index.js');
 
 // Options Controller
 router.get('/getSkewData', controllers.options.getSkewData);
-router.get('/getOptionsData', controllers.options.getOptionsData);
+router.get('/getOptionsData/:symbol/:expirationDate', controllers.options.getOptionsData);
 router.get('/getSingleOptionData/:symbol/:strike/:putCall/:dte', controllers.options.getSingleOptionData);
 
 module.exports = router;

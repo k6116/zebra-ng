@@ -32,8 +32,9 @@ function getSkewData(req, res) {
 
 function getOptionsData(req, res) {
 
-  const projectID = 'NFLX';
 	// const schedule = req.body;
+	const symbol = req.params.symbol;
+	const expirationDate = req.params.expirationDate;
 
   const sql = `
     SELECT 		
@@ -41,7 +42,7 @@ function getOptionsData(req, res) {
 		FROM
 			options
 		WHERE
-			symbol = 'NFLX' AND expirationDate = '2020-07-17'
+			symbol = '${symbol}' AND expirationDate = '${expirationDate}'
     `
 
 	sequelize.query(sql, { type: sequelize.QueryTypes.SELECT})

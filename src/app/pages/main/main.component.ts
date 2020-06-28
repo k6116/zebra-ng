@@ -14,7 +14,6 @@ import * as moment from 'moment';
 export class MainComponent implements OnInit {
 
   skewData: any
-  optionsData: any
   singleOptionData: any
 
   // chart-related variables
@@ -30,14 +29,13 @@ export class MainComponent implements OnInit {
 
   ngOnInit() {
     this.getSkewData();
-    this.getOptionsData();
   }
 
   getSkewData() {
     this.apiDataService.getSkewData()
     .subscribe(
       res => {
-        console.log('Skew: ', res);
+        // console.log('Skew: ', res);
         this.skewData = res;
       },
       err => {
@@ -46,41 +44,24 @@ export class MainComponent implements OnInit {
     );
   }
 
-  getOptionsData() {
-    this.apiDataService.getOptionsData()
-    .subscribe(
-      res => {
-        console.log('Options: ', res);
-        this.optionsData = res;
-      },
-      err => {
-        console.log(err);
-      }
-    );
+  getOptionsData(symbol: string, expirationDate: string) {
+    return this.apiDataService.getOptionsData(symbol, expirationDate).toPromise()
   }
 
   getSingleOptionData(symbol: string, strike: number, putCall: string, dte: number) {
     return this.apiDataService.getSingleOptionData(symbol, strike, putCall, dte).toPromise()
-    // .subscribe(
-    //   res => {
-    //     console.log('Single Options: ', res);
-    //     return res;
-    //   },
-    //   err => {
-    //     console.log(err);
-    //   }
-    // );
-    // return optionData;
   }
 
-  async calcSkewData() {
+  async calcSkewData(optionData: any) {
 
-    const symbol = 'NFLX';
-    const expirationDate = '2020-07-17';
+    const symbol = optionData.symbol;
+    const expirationDate = optionData.expirationDate;
+    const dte = optionData.daysToExpiration;
+    const underlyingPrice = optionData.underlyingPrice;
 
-    const dte = this.optionsData[0].daysToExpiration;
-    const underlyingPrice = this.optionsData[0].underlyingPrice;
-    const strikes = _.uniq(_.map(this.optionsData, 'strike'));
+    const optionsData = await this.getOptionsData(symbol, expirationDate)
+    // console.log(optionsData)
+    const strikes = _.uniq(_.map(optionsData, 'strike'));
 
     const strike1 = strikes.reduce(function(prev, curr) {
       return (Math.abs(curr - underlyingPrice) < Math.abs(prev - underlyingPrice) ? curr : prev);
@@ -99,10 +80,12 @@ export class MainComponent implements OnInit {
     }
 
     const reducedStrikes = strikes.slice(strikeBeg, strikeEnd);
-    console.log('reducedStrikes', reducedStrikes)
+    // console.log('reducedStrikes', reducedStrikes)
 
-    const [ivCalls, ivPuts] = await this.ivSkew('NFLX', reducedStrikes, dte)
-    console.log(ivCalls)
+    const [ivCalls, ivPuts] = await this.ivSkew(symbol, reducedStrikes, dte)
+    console.log('ivCalls', ivCalls)
+    console.log('ivPuts', ivPuts)
+
     this.plotImpliedVolatilitySkew(symbol, expirationDate, dte, reducedStrikes, ivCalls, ivPuts);
   
   }
@@ -112,10 +95,10 @@ export class MainComponent implements OnInit {
     const ivPuts = await this.getOptionAttribute(symbol, strikes, 'PUT', dte, 'impliedVolatility')
 
     for (let i = 0; i < strikes.length; i++) {
-      if (i <= Math.floor(strikes.length / 2)) {
+      if (i <= Math.floor(strikes.length / 2) - 1) {
         ivCalls[i] = null;
       }
-      if (i >= Math.floor(strikes.length / 2)) {
+      if (i >= Math.floor(strikes.length / 2) + 1) {
         ivPuts[i] = null;
       }
     }
@@ -133,11 +116,13 @@ export class MainComponent implements OnInit {
 
   plotImpliedVolatilitySkew(symbol: string, expirationDate: string, dte: number, strikes: any, ivCalls: any, ivPuts: any) {
     // if chart already exists, destroy it before re-drawing
-    if (this.lineChart) {
-      this.lineChart.destroy();
-    }
+    // if (this.lineChart) {
+    //   this.lineChart.destroy();
+    // }
     this.lineChartOptions = {
-      // title: {text: `Supply Demand ${this.selectedProject.NCIProjectName}`},
+      chart: {
+        height: 500
+      },
       title: {text: `${symbol}`},
       subtitle: { text: `Exp: ${expirationDate} | DTE: ${dte}`},
       xAxis: {
@@ -181,12 +166,9 @@ export class MainComponent implements OnInit {
       ]
     };
     this.lineChart = Highcharts.chart('IVSkew', this.lineChartOptions);
-
-    // loop through the historic FTE data object and plot each object as an independent series
-    // this.lineChart.addSeries({
-    //   name: this.demandData.name,
-    //   data: this.demandData.data
-    // });
   }
 
+  test(data: any) {
+    console.log(data)
+  }
 }
