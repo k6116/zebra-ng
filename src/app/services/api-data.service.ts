@@ -23,4 +23,16 @@ export class ApiDataService {
     .map((response: Response) => response.json());
   }
 
+  getOptionsData() {
+    return this.http.get('api/getOptionsData')
+    .timeout(this.timeout)
+    .map((response: Response) => response.json());
+  }
+
+  getSingleOptionData(symbol: string, strike: number, putCall: string, dte: number) {
+    return this.http.get(`api/getSingleOptionData/${symbol}/${strike}/${putCall}/${dte}`)
+    .timeout(this.timeout)
+    .map((response: Response) => response.json());
+  }
+  
 }

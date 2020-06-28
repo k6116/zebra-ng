@@ -30,7 +30,52 @@ function getSkewData(req, res) {
 		})
 }
 
+function getOptionsData(req, res) {
+
+  const projectID = 'NFLX';
+	// const schedule = req.body;
+
+  const sql = `
+    SELECT 		
+			*
+		FROM
+			options
+		WHERE
+			symbol = 'NFLX' AND expirationDate = '2020-07-17'
+    `
+
+	sequelize.query(sql, { type: sequelize.QueryTypes.SELECT})
+		.then(option => {		
+      // console.log(option)
+      res.json(option);
+		})
+}
+
+function getSingleOptionData(req, res) {
+
+	const symbol = req.params.symbol;
+	const strike = req.params.strike;
+	const putCall = req.params.putCall;
+	const dte = req.params.dte;
+
+  const sql = `
+    SELECT 		
+			*
+		FROM
+			options
+		WHERE
+			symbol = '${symbol}' AND strike IN (${strike}) AND putCall = '${putCall}' and daysToExpiration = ${dte}
+    `
+
+	sequelize.query(sql, { type: sequelize.QueryTypes.SELECT})
+		.then(option => {		
+      // console.log(option)
+      res.json(option);
+		})
+}
 
 module.exports = {
-  getSkewData: getSkewData
+	getSkewData: getSkewData,
+	getOptionsData: getOptionsData,
+	getSingleOptionData: getSingleOptionData
 }
