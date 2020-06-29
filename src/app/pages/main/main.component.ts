@@ -83,10 +83,14 @@ export class MainComponent implements OnInit {
     // console.log('reducedStrikes', reducedStrikes)
 
     const [ivCalls, ivPuts] = await this.ivSkew(symbol, reducedStrikes, dte)
+    const [premiumCalls, premiumPuts] = await this.premiumSkew(symbol, reducedStrikes, dte)
     console.log('ivCalls', ivCalls)
     console.log('ivPuts', ivPuts)
+    console.log('premiumCalls', premiumCalls)
+    console.log('premiumPuts', premiumPuts)
 
     this.plotImpliedVolatilitySkew(symbol, expirationDate, dte, reducedStrikes, ivCalls, ivPuts);
+    this.plotPremiumSkew(symbol, expirationDate, dte, reducedStrikes, premiumCalls, premiumPuts);
   
   }
 
@@ -94,6 +98,7 @@ export class MainComponent implements OnInit {
     const ivCalls = await this.getOptionAttribute(symbol, strikes, 'CALL', dte, 'impliedVolatility')
     const ivPuts = await this.getOptionAttribute(symbol, strikes, 'PUT', dte, 'impliedVolatility')
 
+    // Insert nulls where strikes are ITM
     for (let i = 0; i < strikes.length; i++) {
       if (i <= Math.floor(strikes.length / 2) - 1) {
         ivCalls[i] = null;
@@ -106,6 +111,42 @@ export class MainComponent implements OnInit {
     return [ivCalls, ivPuts]
 
   }
+
+  async premiumSkew(symbol: string, strikes: any, dte: number) {
+
+    const premiumCallsBid = await this.getOptionAttribute(symbol, strikes, 'CALL', dte, 'bid')
+    const premiumCallsAsk = await this.getOptionAttribute(symbol, strikes, 'CALL', dte, 'ask')
+    const premiumPutsBid = await this.getOptionAttribute(symbol, strikes, 'PUT', dte, 'bid')
+    const premiumPutsAsk = await this.getOptionAttribute(symbol, strikes, 'PUT', dte, 'ask')
+
+    // Get the mid premiums
+    const premiumCallsMid = [];
+    const premiumPutsMid = [];
+    for (let i = 0; i < strikes.length; i++) {
+      const mid = (premiumCallsBid[i] + premiumCallsAsk[i]) / 2;
+      premiumCallsMid.push(mid);
+    }
+
+    for (let i = 0; i < strikes.length; i++) {
+      const mid = (premiumPutsBid[i] + premiumPutsAsk[i]) / 2;
+      premiumPutsMid.push(mid);
+    }
+
+    // Insert nulls where strikes are ITM
+    for (let i = 0; i < strikes.length; i++) {
+      if (i <= Math.floor(strikes.length / 2) - 1) {
+        premiumCallsMid[i] = null;
+      }
+      if (i >= Math.floor(strikes.length / 2) + 1) {
+        premiumPutsMid[i] = null;
+      }
+    }
+
+    return [premiumCallsMid, premiumPutsMid]
+
+  }
+
+  
 
   async getOptionAttribute(symbol: string, strike: number, putCall: string, dte: number, attr: string) {
     const data = await this.getSingleOptionData(symbol, strike, putCall, dte)
@@ -123,7 +164,7 @@ export class MainComponent implements OnInit {
       chart: {
         height: 500
       },
-      title: {text: `${symbol}`},
+      title: {text: `${symbol} Implied Vol Skew`},
       subtitle: { text: `Exp: ${expirationDate} | DTE: ${dte}`},
       xAxis: {
         title: {text: 'Strike'},
@@ -166,6 +207,60 @@ export class MainComponent implements OnInit {
       ]
     };
     this.lineChart = Highcharts.chart('IVSkew', this.lineChartOptions);
+  }
+
+  plotPremiumSkew(symbol: string, expirationDate: string, dte: number, strikes: any, premiumCalls: any, premiumPuts: any) {
+    // if chart already exists, destroy it before re-drawing
+    // if (this.lineChart) {
+    //   this.lineChart.destroy();
+    // }
+    this.lineChartOptions = {
+      chart: {
+        height: 500
+      },
+      title: {text: `${symbol} Premium Skew`},
+      subtitle: { text: `Exp: ${expirationDate} | DTE: ${dte}`},
+      xAxis: {
+        title: {text: 'Strike'},
+        categories: strikes
+      },
+      yAxis:  {
+        title: {text: 'Premium ($)'}
+      },
+      tooltip: {
+        crosshairs: true,
+        shared: true
+      },
+      plotOptions: {
+        series: {
+          turboThreshold: 3000,
+          cursor: 'pointer',
+          point: {
+            events: {
+              click: function(e) {
+                const p = e.point;
+                console.log(p)
+                // let supplyDemandDate = moment(p.x).toISOString();
+                // supplyDemandDate = moment(supplyDemandDate).format('YYYY-MM-DD');
+                // this.getSupplyDemandDetailsList(supplyDemandDate);
+              }.bind(this)
+            }
+          }
+        }
+      },
+
+      series: [
+        {
+          name: 'Calls',
+          data: premiumCalls
+        },
+        {
+          name: 'Puts',
+          data: premiumPuts
+        }
+      ]
+    };
+    this.lineChart = Highcharts.chart('PremiumSkew', this.lineChartOptions);
   }
 
   test(data: any) {
